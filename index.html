@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lilac Avenue</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&amp;family=Outfit:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            lilac: { 50: '#faf5ff', 100: '#f3e8ff', 200: '#e9d5ff', 300: '#d8b4fe', 400: '#c084fc', 500: '#a855f7', 600: '#9333ea' },
+            blush: { 50: '#fdf2f8', 100: '#fce7f3', 200: '#fbcfe8', 300: '#f9a8d4' },
+            lavender: { 50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .font-display { font-family: 'Cormorant Garamond', serif; }
+    .font-body { font-family: 'Outfit', sans-serif; }
+    html, body { height: 100%; }
+    .fade-in { animation: fadeIn 0.6s ease forwards; opacity: 0; }
+    @keyframes fadeIn { to { opacity: 1; } }
+    .slide-up { animation: slideUp 0.7s ease forwards; opacity: 0; transform: translateY(20px); }
+    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+    .product-card:hover .product-img { transform: scale(1.05); }
+    .product-card:hover .cart-btn { opacity: 1; transform: translateY(0); }
+    .cart-btn { opacity: 0; transform: translateY(10px); transition: all 0.3s ease; }
+    .nav-link { position: relative; }
+    .nav-link::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, #c084fc, #f9a8d4); transition: width 0.3s ease; }
+    .nav-link:hover::after { width: 100%; }
+    .glass { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); }
+    .gradient-lilac { background: linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 50%, #f3e8ff 100%); }
+    .search-overlay { transition: all 0.3s ease; }
+    .modal-overlay { background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full font-body text-gray-800 overflow-auto">
+  <div id="app" class="w-full h-full gradient-lilac">
+   <!-- Navbar -->
+   <nav class="glass sticky top-0 z-50 border-b border-lilac-100/50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+     <button onclick="toggleMobileMenu()" class="lg:hidden p-2"><i data-lucide="menu" class="w-5 h-5"></i></button> <a href="#" class="font-display text-2xl md:text-3xl font-bold bg-gradient-to-r from-lilac-500 to-blush-300 bg-clip-text text-transparent" id="brand-name">Lilac Avenue</a>
+     <div class="hidden lg:flex items-center gap-8">
+      <a href="#" class="nav-link text-sm font-medium text-gray-700 hover:text-lilac-600 transition" onclick="event.preventDefault(); showCategory('new')"><span id="nav-cat-new">New Arrival</span></a> <a href="#" class="nav-link text-sm font-medium text-gray-700 hover:text-lilac-600 transition" onclick="event.preventDefault(); showCategory('best')"><span id="nav-cat-best">Best Seller</span></a> <a href="#" class="nav-link text-sm font-medium text-gray-700 hover:text-lilac-600 transition" onclick="event.preventDefault(); showCategory('blouse')"><span id="nav-cat-blouse">Blouse</span></a> <a href="#" class="nav-link text-sm font-medium text-gray-700 hover:text-lilac-600 transition" onclick="event.preventDefault(); showCategory('casual')"><span id="nav-cat-casual">Casual</span></a> <a href="#" class="nav-link text-sm font-medium text-gray-700 hover:text-lilac-600 transition" onclick="event.preventDefault(); showCategory('office')"><span id="nav-cat-office">Office Wear</span></a> <a href="#" class="nav-link text-sm font-medium text-red-400 hover:text-red-500 transition" onclick="event.preventDefault(); showCategory('sale')"><span id="nav-cat-sale">Sale</span></a>
+     </div>
+     <div class="flex items-center gap-3">
+      <button onclick="toggleSearch()" class="p-2 rounded-full hover:bg-lilac-100 transition"><i data-lucide="search" class="w-5 h-5 text-gray-600"></i></button> <button onclick="toggleWishlist()" class="p-2 rounded-full hover:bg-lilac-100 transition relative"><i data-lucide="heart" class="w-5 h-5 text-gray-600"></i><span id="wishlist-count" class="absolute -top-1 -right-1 bg-blush-300 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center hidden">0</span></button> <button onclick="toggleCart()" class="p-2 rounded-full hover:bg-lilac-100 transition relative"><i data-lucide="shopping-bag" class="w-5 h-5 text-gray-600"></i><span id="cart-count" class="absolute -top-1 -right-1 bg-lilac-400 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center hidden">0</span></button>
+     </div>
+    </div><!-- Search Bar -->
+    <div id="search-bar" class="hidden border-t border-lilac-100 px-4 py-3">
+     <div class="max-w-2xl mx-auto relative">
+      <input type="text" id="search-input" placeholder="Search for blouses, dresses, and more..." class="w-full px-4 py-3 rounded-full border border-lilac-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-lilac-300 text-sm" oninput="searchProducts(this.value)"> <i data-lucide="search" class="absolute right-4 top-3.5 w-4 h-4 text-lilac-400"></i>
+     </div>
+     <div id="search-results" class="max-w-2xl mx-auto mt-2"></div>
+    </div>
+   </nav><!-- Mobile Menu -->
+   <div id="mobile-menu" class="hidden fixed inset-0 z-[60] modal-overlay">
+    <div class="bg-white w-72 h-full p-6 slide-up">
+     <div class="flex justify-between items-center mb-8">
+      <span class="font-display text-xl font-bold text-lilac-500">Menu</span> <button onclick="toggleMobileMenu()" class="p-2"><i data-lucide="x" class="w-5 h-5"></i></button>
+     </div>
+     <div class="flex flex-col gap-4">
+      <a href="#" class="text-gray-700 font-medium py-2 border-b border-lilac-50" onclick="event.preventDefault(); showCategory('new');toggleMobileMenu()"><span id="mob-cat-new">New Arrival</span></a> <a href="#" class="text-gray-700 font-medium py-2 border-b border-lilac-50" onclick="event.preventDefault(); showCategory('best');toggleMobileMenu()"><span id="mob-cat-best">Best Seller</span></a> <a href="#" class="text-gray-700 font-medium py-2 border-b border-lilac-50" onclick="event.preventDefault(); showCategory('blouse');toggleMobileMenu()"><span id="mob-cat-blouse">Blouse</span></a> <a href="#" class="text-gray-700 font-medium py-2 border-b border-lilac-50" onclick="event.preventDefault(); showCategory('casual');toggleMobileMenu()"><span id="mob-cat-casual">Casual</span></a> <a href="#" class="text-gray-700 font-medium py-2 border-b border-lilac-50" onclick="event.preventDefault(); showCategory('office');toggleMobileMenu()"><span id="mob-cat-office">Office Wear</span></a> <a href="#" class="text-red-400 font-medium py-2" onclick="event.preventDefault(); showCategory('sale');toggleMobileMenu()"><span id="mob-cat-sale">Sale</span></a>
+     </div>
+    </div>
+   </div><!-- Hero Banner -->
+   <section id="hero-section" class="relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 py-16 md:py-24 flex flex-col md:flex-row items-center gap-8">
+     <div class="flex-1 text-center md:text-left slide-up">
+      <p class="text-lilac-400 font-medium text-sm tracking-widest uppercase mb-3">New Season</p>
+      <h1 id="hero-title" class="font-display text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight mb-4">Summer Collection 2025</h1>
+      <p id="hero-subtitle" class="text-gray-500 text-lg md:text-xl mb-8 font-light">Elegant. Effortless. You.</p><button onclick="showCategory('new')" class="bg-gradient-to-r from-lilac-400 to-blush-300 text-white px-8 py-3.5 rounded-full font-medium hover:shadow-lg hover:shadow-lilac-200 transition-all duration-300 transform hover:-translate-y-0.5">Shop Now</button>
+     </div>
+     <div class="flex-1 relative">
+      <div class="w-72 h-96 md:w-80 md:h-[28rem] mx-auto rounded-3xl bg-gradient-to-br from-lilac-200 via-blush-100 to-lavender-100 shadow-xl shadow-lilac-100/50 flex items-center justify-center overflow-hidden">
+       <svg viewbox="0 0 200 300" class="w-48 h-64 opacity-80">
+        <ellipse cx="100" cy="80" rx="25" ry="30" fill="#d8b4fe" /> <path d="M70 110 C60 140 55 200 65 270 L135 270 C145 200 140 140 130 110 Z" fill="#e9d5ff" /> <path d="M75 115 C80 130 85 160 80 200 L120 200 C115 160 120 130 125 115 Z" fill="#f3e8ff" /> <rect x="70" y="265" width="25" height="30" rx="5" fill="#ddd6fe" /> <rect x="105" y="265" width="25" height="30" rx="5" fill="#ddd6fe" />
+       </svg>
+      </div>
+      <div class="absolute top-4 right-4 md:right-12 bg-white/90 rounded-2xl p-3 shadow-lg fade-in" style="animation-delay:0.4s">
+       <p class="text-xs text-lilac-500 font-medium">Trending</p>
+       <p class="text-sm font-semibold">Satin Blouse</p>
+      </div>
+      <div class="absolute bottom-8 left-0 md:left-4 bg-white/90 rounded-2xl p-3 shadow-lg fade-in" style="animation-delay:0.6s">
+       <p class="text-xs text-blush-300 font-medium">⭐ 4.9</p>
+       <p class="text-sm font-semibold">2.4k reviews</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- Categories -->
+   <section class="max-w-7xl mx-auto px-4 py-12">
+    <div class="flex items-center justify-between mb-8">
+     <h2 class="font-display text-2xl md:text-3xl font-semibold" id="section-title">New Arrivals</h2>
+     <div class="flex gap-2">
+      <button onclick="showCategory('all')" class="px-4 py-1.5 rounded-full text-xs font-medium bg-lilac-100 text-lilac-600 hover:bg-lilac-200 transition">All</button> <button onclick="showCategory('new')" class="px-4 py-1.5 rounded-full text-xs font-medium bg-white text-gray-500 hover:bg-lilac-50 transition">New</button> <button onclick="showCategory('best')" class="px-4 py-1.5 rounded-full text-xs font-medium bg-white text-gray-500 hover:bg-lilac-50 transition">Best</button>
+     </div>
+    </div><!-- Product Grid -->
+    <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+    </div>
+   </section><!-- Product Detail Modal -->
+   <div id="product-modal" class="hidden fixed inset-0 z-[70] modal-overlay overflow-auto">
+    <div class="min-h-full flex items-start justify-center p-4 pt-12">
+     <div class="bg-white rounded-3xl max-w-3xl w-full shadow-2xl overflow-hidden slide-up">
+      <div class="flex flex-col md:flex-row">
+       <div id="modal-image" class="w-full md:w-1/2 h-72 md:h-auto bg-gradient-to-br from-lilac-100 to-blush-50 flex items-center justify-center"></div>
+       <div class="p-6 md:p-8 flex-1">
+        <button onclick="closeModal()" class="float-right p-1 hover:bg-lilac-50 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <p id="modal-category" class="text-lilac-400 text-xs font-medium uppercase tracking-wider mb-2"></p>
+        <h3 id="modal-name" class="font-display text-2xl font-bold mb-2"></h3>
+        <div class="flex items-center gap-2 mb-4">
+         <div class="flex text-yellow-400 text-sm">
+          ★★★★★
+         </div><span class="text-xs text-gray-400">(128 reviews)</span>
+        </div>
+        <p id="modal-price" class="text-xl font-semibold text-lilac-600 mb-4"></p>
+        <p class="text-sm text-gray-500 mb-6">Premium quality fabric with a relaxed fit. Perfect for everyday elegance.</p><!-- Size Guide -->
+        <div class="mb-4">
+         <p class="text-sm font-medium mb-2">Size</p>
+         <div class="flex gap-2" id="size-options">
+          <button class="size-btn w-10 h-10 rounded-xl border-2 border-lilac-200 text-sm font-medium hover:border-lilac-400 hover:bg-lilac-50 transition" onclick="selectSize(this)">S</button> <button class="size-btn w-10 h-10 rounded-xl border-2 border-lilac-200 text-sm font-medium hover:border-lilac-400 hover:bg-lilac-50 transition" onclick="selectSize(this)">M</button> <button class="size-btn w-10 h-10 rounded-xl border-2 border-lilac-200 text-sm font-medium hover:border-lilac-400 hover:bg-lilac-50 transition" onclick="selectSize(this)">L</button> <button class="size-btn w-10 h-10 rounded-xl border-2 border-lilac-200 text-sm font-medium hover:border-lilac-400 hover:bg-lilac-50 transition" onclick="selectSize(this)">XL</button>
+         </div>
+        </div><!-- Size Guide Link --> <button onclick="toggleSizeGuide()" class="text-xs text-lilac-400 underline mb-4 block">📏 Size Guide</button>
+        <div id="size-guide" class="hidden bg-lilac-50 rounded-xl p-4 mb-4 text-xs text-gray-600">
+         <p class="font-medium mb-2">Size Chart (cm)</p>
+         <table class="w-full">
+          <tbody>
+           <tr class="border-b border-lilac-100">
+            <td class="py-1">S</td>
+            <td>Bust: 84</td>
+            <td>Waist: 66</td>
+           </tr>
+           <tr class="border-b border-lilac-100">
+            <td class="py-1">M</td>
+            <td>Bust: 88</td>
+            <td>Waist: 70</td>
+           </tr>
+           <tr class="border-b border-lilac-100">
+            <td class="py-1">L</td>
+            <td>Bust: 92</td>
+            <td>Waist: 74</td>
+           </tr>
+           <tr>
+            <td class="py-1">XL</td>
+            <td>Bust: 96</td>
+            <td>Waist: 78</td>
+           </tr>
+          </tbody>
+         </table>
+        </div><button onclick="addToCartFromModal()" class="w-full bg-gradient-to-r from-lilac-400 to-blush-300 text-white py-3 rounded-full font-medium hover:shadow-lg transition-all">Add to Cart</button> <!-- Reviews -->
+        <div class="mt-6 pt-4 border-t border-lilac-50">
+         <p class="text-sm font-medium mb-3">Recent Reviews</p>
+         <div class="space-y-3">
+          <div class="bg-lilac-50/50 rounded-xl p-3">
+           <p class="text-xs font-medium">Soyeon K. ⭐⭐⭐⭐⭐</p>
+           <p class="text-xs text-gray-500 mt-1">Love the fabric! So soft and fits perfectly.</p>
+          </div>
+          <div class="bg-lilac-50/50 rounded-xl p-3">
+           <p class="text-xs font-medium">Mia L. ⭐⭐⭐⭐⭐</p>
+           <p class="text-xs text-gray-500 mt-1">Beautiful color, got so many compliments!</p>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- Cart Sidebar -->
+   <div id="cart-sidebar" class="hidden fixed inset-0 z-[70] modal-overlay">
+    <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl p-6 overflow-auto slide-up">
+     <div class="flex justify-between items-center mb-6">
+      <h3 class="font-display text-2xl font-bold">Your Bag</h3><button onclick="toggleCart()" class="p-2 hover:bg-lilac-50 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
+     </div>
+     <div id="cart-items" class="space-y-4 mb-6"></div>
+     <div id="cart-empty" class="text-center py-12 text-gray-400">
+      <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto mb-3 opacity-30"></i>
+      <p>Your bag is empty</p>
+     </div>
+     <div id="cart-footer" class="hidden border-t border-lilac-100 pt-4">
+      <div class="flex justify-between mb-4"><span class="font-medium">Total</span><span id="cart-total" class="font-bold text-lilac-600">Rp 0</span>
+      </div><button onclick="showCheckout()" class="w-full bg-gradient-to-r from-lilac-400 to-blush-300 text-white py-3 rounded-full font-medium hover:shadow-lg transition-all">Checkout</button>
+     </div>
+    </div>
+   </div><!-- Checkout Modal -->
+   <div id="checkout-modal" class="hidden fixed inset-0 z-[80] modal-overlay overflow-auto">
+    <div class="min-h-full flex items-start justify-center p-4 pt-8">
+     <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl p-8 slide-up">
+      <div class="flex justify-between items-center mb-6">
+       <h3 class="font-display text-2xl font-bold">Checkout</h3><button onclick="closeCheckout()" class="p-2 hover:bg-lilac-50 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form onsubmit="submitOrder(event)" class="space-y-4">
+       <div><label class="text-sm font-medium text-gray-600 block mb-1" for="co-name">Full Name</label><input id="co-name" required class="w-full px-4 py-3 rounded-xl border border-lilac-200 focus:ring-2 focus:ring-lilac-300 focus:outline-none text-sm" placeholder="Your name">
+       </div>
+       <div><label class="text-sm font-medium text-gray-600 block mb-1" for="co-phone">Phone / WhatsApp</label><input id="co-phone" required class="w-full px-4 py-3 rounded-xl border border-lilac-200 focus:ring-2 focus:ring-lilac-300 focus:outline-none text-sm" placeholder="08xxxxxxxxxx">
+       </div>
+       <div><label class="text-sm font-medium text-gray-600 block mb-1" for="co-address">Shipping Address</label><textarea id="co-address" required rows="3" class="w-full px-4 py-3 rounded-xl border border-lilac-200 focus:ring-2 focus:ring-lilac-300 focus:outline-none text-sm" placeholder="Full address"></textarea>
+       </div>
+       <div class="bg-lilac-50 rounded-xl p-4">
+        <p class="text-sm font-medium mb-2">Order Summary</p>
+        <div id="checkout-items" class="text-xs text-gray-500 space-y-1"></div>
+        <div class="border-t border-lilac-200 mt-2 pt-2 flex justify-between font-medium text-sm"><span>Total</span><span id="checkout-total" class="text-lilac-600"></span>
+        </div>
+       </div><button type="submit" class="w-full bg-gradient-to-r from-lilac-400 to-blush-300 text-white py-3.5 rounded-full font-medium hover:shadow-lg transition-all text-base">Place Order</button>
+      </form>
+      <div id="order-success" class="hidden text-center py-8">
+       <div class="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4"><i data-lucide="check" class="w-8 h-8 text-green-500"></i>
+       </div>
+       <h4 class="font-display text-xl font-bold mb-2">Order Placed! 🎉</h4>
+       <p class="text-sm text-gray-500">Thank you for shopping at Lilac Avenue. We'll confirm your order via WhatsApp.</p>
+      </div>
+     </div>
+    </div>
+   </div><!-- Toast -->
+   <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] hidden">
+    <div class="bg-gray-900 text-white px-6 py-3 rounded-full text-sm shadow-xl flex items-center gap-2">
+     <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i> <span id="toast-msg">Added to cart!</span>
+    </div>
+   </div><!-- Footer -->
+   <footer class="bg-white/60 border-t border-lilac-100 mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+     <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div>
+       <h4 class="font-display text-xl font-bold bg-gradient-to-r from-lilac-500 to-blush-300 bg-clip-text text-transparent mb-3">Lilac Avenue</h4>
+       <p class="text-sm text-gray-500">Your destination for modern feminine fashion. Curated with love from Indonesia.</p>
+      </div>
+      <div>
+       <h5 class="font-medium text-sm mb-3">Shop</h5>
+       <div class="space-y-2 text-sm text-gray-500">
+        <p class="hover:text-lilac-500 cursor-pointer transition">New Arrival</p>
+        <p class="hover:text-lilac-500 cursor-pointer transition">Best Seller</p>
+        <p class="hover:text-lilac-500 cursor-pointer transition">Sale</p>
+       </div>
+      </div>
+      <div>
+       <h5 class="font-medium text-sm mb-3">Help</h5>
+       <div class="space-y-2 text-sm text-gray-500">
+        <p>Shipping &amp; Returns</p>
+        <p>Size Guide</p>
+        <p>Contact Us</p>
+       </div>
+      </div>
+      <div>
+       <h5 class="font-medium text-sm mb-3">Follow Us</h5>
+       <div class="flex gap-3">
+        <div class="w-9 h-9 rounded-full bg-lilac-100 flex items-center justify-center hover:bg-lilac-200 transition cursor-pointer"><i data-lucide="instagram" class="w-4 h-4 text-lilac-500"></i>
+        </div>
+        <div class="w-9 h-9 rounded-full bg-lilac-100 flex items-center justify-center hover:bg-lilac-200 transition cursor-pointer"><i data-lucide="twitter" class="w-4 h-4 text-lilac-500"></i>
+        </div>
+        <div class="w-9 h-9 rounded-full bg-lilac-100 flex items-center justify-center hover:bg-lilac-200 transition cursor-pointer"><i data-lucide="mail" class="w-4 h-4 text-lilac-500"></i>
+        </div>
+       </div>
+       <p class="text-xs text-gray-400 mt-4">hello@lilacavenue.co</p>
+      </div>
+     </div>
+     <div class="border-t border-lilac-100 mt-8 pt-6 text-center text-xs text-gray-400">
+      © 2025 Lilac Avenue. All rights reserved.
+     </div>
+    </div>
+   </footer>
+  </div>
+  <script>
+  // Data
+  const products = [
+    { id: 1, name: 'Satin Wrap Blouse', price: 289000, category: ['new','blouse'], color: 'from-lilac-200 to-blush-100', tag: 'New' },
+    { id: 2, name: 'Pleated Midi Skirt', price: 359000, category: ['new','casual'], color: 'from-blush-200 to-lilac-100', tag: 'New' },
+    { id: 3, name: 'Oversized Blazer', price: 489000, category: ['best','office'], color: 'from-lavender-200 to-lilac-100', tag: 'Best' },
+    { id: 4, name: 'Ruffle Collar Top', price: 249000, category: ['best','blouse'], color: 'from-blush-100 to-lavender-100', tag: 'Best' },
+    { id: 5, name: 'Linen Wide Pants', price: 329000, category: ['casual'], color: 'from-lilac-100 to-blush-50', tag: '' },
+    { id: 6, name: 'Puff Sleeve Dress', price: 399000, category: ['new','casual'], color: 'from-blush-200 to-lilac-200', tag: 'New' },
+    { id: 7, name: 'Tailored Trousers', price: 369000, category: ['office'], color: 'from-lavender-100 to-lilac-200', tag: '' },
+    { id: 8, name: 'Knit Cardigan Set', price: 199000, category: ['sale','casual'], color: 'from-blush-100 to-lilac-100', tag: 'Sale', originalPrice: 349000 },
+  ];
+
+  const categoryNames = {
+    new: 'New Arrival',
+    best: 'Best Seller',
+    blouse: 'Blouse',
+    casual: 'Casual',
+    office: 'Office Wear',
+    sale: 'Sale'
+  };
+
+  let cart = [];
+  let wishlist = [];
+  let currentProduct = null;
+
+  function updateCategoryLabels() {
+    const config = window.elementSdk?.config || {};
+    const cat_new = config.cat_new || categoryNames.new;
+    const cat_best = config.cat_best || categoryNames.best;
+    const cat_blouse = config.cat_blouse || categoryNames.blouse;
+    const cat_casual = config.cat_casual || categoryNames.casual;
+    const cat_office = config.cat_office || categoryNames.office;
+    const cat_sale = config.cat_sale || categoryNames.sale;
+    
+    categoryNames.new = cat_new;
+    categoryNames.best = cat_best;
+    categoryNames.blouse = cat_blouse;
+    categoryNames.casual = cat_casual;
+    categoryNames.office = cat_office;
+    categoryNames.sale = cat_sale;
+    
+    document.getElementById('nav-cat-new').textContent = cat_new;
+    document.getElementById('nav-cat-best').textContent = cat_best;
+    document.getElementById('nav-cat-blouse').textContent = cat_blouse;
+    document.getElementById('nav-cat-casual').textContent = cat_casual;
+    document.getElementById('nav-cat-office').textContent = cat_office;
+    document.getElementById('nav-cat-sale').textContent = cat_sale;
+    
+    document.getElementById('mob-cat-new').textContent = cat_new;
+    document.getElementById('mob-cat-best').textContent = cat_best;
+    document.getElementById('mob-cat-blouse').textContent = cat_blouse;
+    document.getElementById('mob-cat-casual').textContent = cat_casual;
+    document.getElementById('mob-cat-office').textContent = cat_office;
+    document.getElementById('mob-cat-sale').textContent = cat_sale;
+  }
+
+  function formatPrice(p) { return 'Rp ' + p.toLocaleString('id-ID'); }
+
+  function renderProducts(list) {
+    const grid = document.getElementById('product-grid');
+    grid.innerHTML = list.map((p, i) => `
+      <div class="product-card group cursor-pointer" style="animation-delay:${i*0.1}s" onclick="openProduct(${p.id})">
+        <div class="relative rounded-2xl overflow-hidden mb-3 aspect-[3/4] bg-gradient-to-br ${p.color} flex items-center justify-center">
+          <div class="product-img transition-transform duration-500">
+            <svg viewBox="0 0 80 120" class="w-20 h-28 opacity-60"><ellipse cx="40" cy="30" rx="10" ry="12" fill="#c084fc"/><path d="M28 42 C24 55 22 80 26 110 L54 110 C58 80 56 55 52 42 Z" fill="#e9d5ff"/></svg>
+          </div>
+          ${p.tag ? `<span class="absolute top-3 left-3 text-xs font-medium px-2.5 py-1 rounded-full ${p.tag==='Sale'?'bg-red-400 text-white':'bg-white/90 text-lilac-600'}">${p.tag}</span>` : ''}
+          <button onclick="event.stopPropagation();toggleWishlistItem(${p.id})" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white transition opacity-0 group-hover:opacity-100">
+            <i data-lucide="heart" class="w-4 h-4 ${wishlist.includes(p.id)?'fill-red-400 text-red-400':'text-gray-400'}"></i>
+          </button>
+          <button onclick="event.stopPropagation();addToCart(${p.id})" class="cart-btn absolute bottom-3 left-3 right-3 bg-white/95 text-gray-800 py-2.5 rounded-xl text-xs font-medium hover:bg-lilac-50 transition text-center shadow-sm">Add to Bag</button>
+        </div>
+        <h3 class="text-sm font-medium truncate">${p.name}</h3>
+        <div class="flex items-center gap-2 mt-1">
+          <p class="text-sm font-semibold text-lilac-600">${formatPrice(p.price)}</p>
+          ${p.originalPrice ? `<p class="text-xs text-gray-400 line-through">${formatPrice(p.originalPrice)}</p>` : ''}
+        </div>
+      </div>
+    `).join('');
+    lucide.createIcons();
+  }
+
+  function showCategory(cat) {
+    const titles = { all:'All Products', new: categoryNames.new, best: categoryNames.best, blouse: categoryNames.blouse, casual: categoryNames.casual, office: categoryNames.office, sale: categoryNames.sale };
+    document.getElementById('section-title').textContent = titles[cat] || 'All Products';
+    const filtered = cat === 'all' ? products : products.filter(p => p.category.includes(cat));
+    renderProducts(filtered);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function openProduct(id) {
+    currentProduct = products.find(p=>p.id===id);
+    if(!currentProduct) return;
+    document.getElementById('modal-name').textContent = currentProduct.name;
+    document.getElementById('modal-price').textContent = formatPrice(currentProduct.price);
+    document.getElementById('modal-category').textContent = currentProduct.category[0];
+    document.getElementById('modal-image').className = `w-full md:w-1/2 h-72 md:h-auto bg-gradient-to-br ${currentProduct.color} flex items-center justify-center`;
+    document.getElementById('modal-image').innerHTML = '<svg viewBox="0 0 120 180" class="w-28 h-40 opacity-60"><ellipse cx="60" cy="45" rx="15" ry="18" fill="#c084fc"/><path d="M42 63 C36 82 33 120 39 165 L81 165 C87 120 84 82 78 63 Z" fill="#e9d5ff"/></svg>';
+    document.getElementById('product-modal').classList.remove('hidden');
+    document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('border-lilac-500','bg-lilac-50'));
+    document.getElementById('size-guide').classList.add('hidden');
+    lucide.createIcons();
+  }
+
+  function closeModal() { document.getElementById('product-modal').classList.add('hidden'); }
+  function selectSize(btn) { document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('border-lilac-500','bg-lilac-50')); btn.classList.add('border-lilac-500','bg-lilac-50'); }
+  function toggleSizeGuide() { document.getElementById('size-guide').classList.toggle('hidden'); }
+
+  function addToCart(id) { const p=products.find(x=>x.id===id); if(p){cart.push({...p,size:'M'});updateCartUI();showToast('Added to bag!');} }
+  function addToCartFromModal() { if(currentProduct){cart.push({...currentProduct,size:'M'});updateCartUI();closeModal();showToast('Added to bag!');} }
+
+  function updateCartUI() {
+    const countEl = document.getElementById('cart-count');
+    countEl.textContent = cart.length;
+    countEl.classList.toggle('hidden', cart.length===0);
+    const itemsEl = document.getElementById('cart-items');
+    const emptyEl = document.getElementById('cart-empty');
+    const footerEl = document.getElementById('cart-footer');
+    if(cart.length===0){ emptyEl.classList.remove('hidden'); footerEl.classList.add('hidden'); itemsEl.innerHTML=''; return; }
+    emptyEl.classList.add('hidden'); footerEl.classList.remove('hidden');
+    itemsEl.innerHTML = cart.map((item,i) => `
+      <div class="flex items-center gap-3 bg-lilac-50/50 rounded-xl p-3">
+        <div class="w-14 h-14 rounded-xl bg-gradient-to-br ${item.color} flex-shrink-0 flex items-center justify-center"><svg viewBox="0 0 40 60" class="w-6 h-8 opacity-50"><ellipse cx="20" cy="15" rx="5" ry="6" fill="#c084fc"/><path d="M14 21 C12 28 11 40 13 55 L27 55 C29 40 28 28 26 21 Z" fill="#e9d5ff"/></svg></div>
+        <div class="flex-1 min-w-0"><p class="text-sm font-medium truncate">${item.name}</p><p class="text-xs text-gray-400">Size ${item.size}</p></div>
+        <div class="text-right"><p class="text-sm font-semibold text-lilac-600">${formatPrice(item.price)}</p><button onclick="removeFromCart(${i})" class="text-xs text-red-400 hover:underline">Remove</button></div>
+      </div>
+    `).join('');
+    document.getElementById('cart-total').textContent = formatPrice(cart.reduce((s,i)=>s+i.price,0));
+  }
+
+  function removeFromCart(i) { cart.splice(i,1); updateCartUI(); }
+  function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('hidden'); lucide.createIcons(); }
+
+  function toggleWishlistItem(id) { if(wishlist.includes(id)){wishlist=wishlist.filter(x=>x!==id);}else{wishlist.push(id);showToast('Added to wishlist 💜');} document.getElementById('wishlist-count').textContent=wishlist.length; document.getElementById('wishlist-count').classList.toggle('hidden',wishlist.length===0); renderProducts(products); }
+  function toggleWishlist() { showToast(`${wishlist.length} items in wishlist`); }
+
+  function toggleSearch() { document.getElementById('search-bar').classList.toggle('hidden'); document.getElementById('search-input').focus(); }
+  function searchProducts(q) {
+    const res = document.getElementById('search-results');
+    if(!q.trim()){ res.innerHTML=''; return; }
+    const found = products.filter(p=>p.name.toLowerCase().includes(q.toLowerCase()));
+    res.innerHTML = found.length ? found.map(p=>`<div class="bg-white rounded-xl p-3 mb-2 cursor-pointer hover:bg-lilac-50 transition flex justify-between items-center" onclick="openProduct(${p.id})"><span class="text-sm">${p.name}</span><span class="text-xs text-lilac-500">${formatPrice(p.price)}</span></div>`).join('') : '<p class="text-sm text-gray-400 p-3">No products found</p>';
+  }
+
+  function toggleMobileMenu() { document.getElementById('mobile-menu').classList.toggle('hidden'); }
+
+  function showCheckout() {
+    toggleCart();
+    document.getElementById('checkout-modal').classList.remove('hidden');
+    document.getElementById('order-success').classList.add('hidden');
+    document.getElementById('checkout-modal').querySelector('form').classList.remove('hidden');
+    document.getElementById('checkout-items').innerHTML = cart.map(i=>`<p>${i.name} (${i.size}) - ${formatPrice(i.price)}</p>`).join('');
+    document.getElementById('checkout-total').textContent = formatPrice(cart.reduce((s,i)=>s+i.price,0));
+    lucide.createIcons();
+  }
+  function closeCheckout() { document.getElementById('checkout-modal').classList.add('hidden'); }
+  function submitOrder(e) {
+    e.preventDefault();
+    document.getElementById('checkout-modal').querySelector('form').classList.add('hidden');
+    document.getElementById('order-success').classList.remove('hidden');
+    cart=[]; updateCartUI();
+    lucide.createIcons();
+  }
+
+  function showToast(msg) { const t=document.getElementById('toast'); document.getElementById('toast-msg').textContent=msg; t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'),2500); }
+
+  // Init
+  renderProducts(products);
+  lucide.createIcons();
+
+  // Element SDK
+  const defaultConfig = {
+    brand_name: 'Lilac Avenue',
+    hero_title: 'Summer Collection 2026',
+    hero_subtitle: 'Elegant. Effortless. You.',
+    cat_new: 'New Arrival',
+    cat_best: 'Best Seller',
+    cat_blouse: 'Blouse',
+    cat_casual: 'Casual',
+    cat_office: 'Office Wear',
+    cat_sale: 'Sale',
+    background_color: '#f5f3ff',
+    surface_color: '#ffffff',
+    text_color: '#1f2937',
+    primary_action: '#c084fc',
+    secondary_action: '#f9a8d4',
+    font_family: 'Cormorant Garamond',
+    font_size: 16
+  };
+
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => {
+      document.getElementById('brand-name').textContent = config.brand_name || defaultConfig.brand_name;
+      document.getElementById('hero-title').textContent = config.hero_title || defaultConfig.hero_title;
+      document.getElementById('hero-subtitle').textContent = config.hero_subtitle || defaultConfig.hero_subtitle;
+      updateCategoryLabels();
+      const font = config.font_family || defaultConfig.font_family;
+      document.querySelectorAll('.font-display').forEach(el => el.style.fontFamily = `${font}, serif`);
+      const size = config.font_size || defaultConfig.font_size;
+      document.querySelectorAll('.font-display').forEach(el => { if(el.tagName==='H1') el.style.fontSize=`${size*3.5}px`; });
+      document.getElementById('app').style.background = `linear-gradient(135deg, ${config.background_color||defaultConfig.background_color} 0%, #fdf2f8 50%, #f3e8ff 100%)`;
+    },
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get:()=>config.background_color||defaultConfig.background_color, set:(v)=>{config.background_color=v;window.elementSdk.setConfig({background_color:v})} },
+        { get:()=>config.surface_color||defaultConfig.surface_color, set:(v)=>{config.surface_color=v;window.elementSdk.setConfig({surface_color:v})} },
+        { get:()=>config.text_color||defaultConfig.text_color, set:(v)=>{config.text_color=v;window.elementSdk.setConfig({text_color:v})} },
+        { get:()=>config.primary_action||defaultConfig.primary_action, set:(v)=>{config.primary_action=v;window.elementSdk.setConfig({primary_action:v})} },
+        { get:()=>config.secondary_action||defaultConfig.secondary_action, set:(v)=>{config.secondary_action=v;window.elementSdk.setConfig({secondary_action:v})} },
+      ],
+      borderables: [],
+      fontEditable: { get:()=>config.font_family||defaultConfig.font_family, set:(v)=>{config.font_family=v;window.elementSdk.setConfig({font_family:v})} },
+      fontSizeable: { get:()=>config.font_size||defaultConfig.font_size, set:(v)=>{config.font_size=v;window.elementSdk.setConfig({font_size:v})} }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['brand_name', config.brand_name||defaultConfig.brand_name],
+      ['hero_title', config.hero_title||defaultConfig.hero_title],
+      ['hero_subtitle', config.hero_subtitle||defaultConfig.hero_subtitle],
+      ['cat_new', config.cat_new||defaultConfig.cat_new],
+      ['cat_best', config.cat_best||defaultConfig.cat_best],
+      ['cat_blouse', config.cat_blouse||defaultConfig.cat_blouse],
+      ['cat_casual', config.cat_casual||defaultConfig.cat_casual],
+      ['cat_office', config.cat_office||defaultConfig.cat_office],
+      ['cat_sale', config.cat_sale||defaultConfig.cat_sale]
+    ])
+  });
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0008c01fd89fd7c',t:'MTc3OTUwMjQ2NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
